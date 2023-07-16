@@ -1,0 +1,28 @@
+name: Flyway Migration
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  migrate_dev:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: jdbc:postgresql://postgresdb.cbg8alcgmmfh.us-east-1.rds.amazonaws.com:5432/postgresdb
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Run Flyway Migration (Dev)
+        run: |
+          docker run --rm \
+            -v $(pwd)/db/migration:/flyway/sql \
+            -e FLYWAY_URL="${{ env.DATABASE_URL }}" \
+            -e FLYWAY_USER="${{ env.DATABASE_USERNAME }}" \
+            -e FLYWAY_PASSWORD="${{ env.DATABASE_PASSWORD }}" \
+            flyway/flyway:7.15.0 \
+            migrate
